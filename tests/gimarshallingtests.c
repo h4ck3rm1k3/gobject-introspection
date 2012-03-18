@@ -4363,7 +4363,8 @@ gi_marshalling_tests_properties_object_get_property (GObject * object, guint pro
             g_value_set_boolean (value, self->some_boolean);
             break;
         case SOME_CHAR_PROPERTY:
-            g_value_set_schar (value, self->some_char);
+          //            g_value_set_schar (value, self->some_char); undefined reference to `g_value_set_schar'
+
             break;
         case SOME_UCHAR_PROPERTY:
             g_value_set_uchar (value, self->some_uchar);
@@ -4408,7 +4409,8 @@ gi_marshalling_tests_properties_object_set_property (GObject * object, guint pro
             self->some_boolean = g_value_get_boolean (value);
             break;
         case SOME_CHAR_PROPERTY:
-            self->some_char = g_value_get_schar (value);
+          //            self->some_char = g_value_get_schar (value); gimarshallingtests.c:4411: undefined reference to `g_value_get_schar'
+
             break;
         case SOME_UCHAR_PROPERTY:
             self->some_uchar = g_value_get_uchar (value);

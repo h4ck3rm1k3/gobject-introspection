@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<repository>
+  <namespace name="test" version="totally-experimental-0.00001" version="1.0"
+            xmlns="http://www.gtk.org/introspection/core/1.0"
+            xmlns:c="http://www.gtk.org/introspection/c/1.0"
+            xmlns:glib="http://www.gtk.org/introspection/glib/1.0">
+    <enumeration name="ResolverError" glib:type-name="GResolverError" glib:get-type="g_resolver_error_get_type" glib:error-domain="g-resolver-error-quark">
+      <member name="not_found" value="0">
+        <attribute name="c:identifier" value="G_RESOLVER_ERROR_NOT_FOUND"/>
+      </member>
+      <member name="temporary_failure" value="1">
+        <attribute name="c:identifier" value="G_RESOLVER_ERROR_TEMPORARY_FAILURE"/>
+      </member>
+      <member name="internal" value="2">
+        <attribute name="c:identifier" value="G_RESOLVER_ERROR_INTERNAL"/>
+      </member>
+    </enumeration>
+  </namespace>
+</repository>
