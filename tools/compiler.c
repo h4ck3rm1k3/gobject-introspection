@@ -115,7 +115,8 @@ out:
   return success;
 }
 
-GLogLevelFlags logged_levels;
+// moved out into the lib
+GLogLevelFlags logged_levels; // a copy here, and a copy in the other lib that is hidden
 
 static void log_handler (const gchar *log_domain,
 			 GLogLevelFlags log_level,
@@ -160,6 +161,9 @@ main (int argc, char ** argv)
     logged_levels = logged_levels | G_LOG_LEVEL_DEBUG;
   if (verbose)
     logged_levels = logged_levels | G_LOG_LEVEL_MESSAGE;
+
+  _g_ir_parser_set_loglevels( logged_levels);
+
   g_log_set_always_fatal (G_LOG_LEVEL_WARNING | G_LOG_LEVEL_CRITICAL);
 
   g_log_set_default_handler (log_handler, NULL);

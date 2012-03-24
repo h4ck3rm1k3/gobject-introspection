@@ -14,7 +14,7 @@ gitestwrite_LDADD = $(top_builddir)/libgirepository-1.0.la $(GIREPO_LIBS)
 
 gitestenum_SOURCES = $(srcdir)/gitestenum.c
 gitestenum_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
-gitestenum_LDADD = $(top_builddir)/libgirepository-1.0.la $(top_builddir)/libgirepository-internals.la $(top_builddir)/libgirepository-gthash.la $(GIREPO_LIBS)
+gitestenum_LDADD = $(top_builddir)/libgirepository-1.0.la  $(top_builddir)/libgirepository-gthash.la $(GIREPO_LIBS)
 
 gitestthrows_SOURCES = $(srcdir)/gitestthrows.c
 gitestthrows_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository

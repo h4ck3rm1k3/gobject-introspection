@@ -45,6 +45,9 @@ GIrModule *_g_ir_parser_parse_file   (GIrParser    *parser,
 				      const gchar  *filename,
 				      GError      **error);
 
+// TODO this was extern, moving back in the lib
+void _g_ir_parser_set_loglevels( GLogLevelFlags logged_levels);
+
 G_END_DECLS
 
 #endif  /* __G_GIR_PARSER_H__ */

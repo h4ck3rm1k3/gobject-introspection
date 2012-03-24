@@ -2663,7 +2663,14 @@ parse_include (GMarkupParseContext *context,
   return TRUE;
 }
 
-extern GLogLevelFlags logged_levels;
+// was extern, moving back in the lib and protecting access to it.
+GLogLevelFlags logged_levels;
+
+
+void _g_ir_parser_set_loglevels( GLogLevelFlags new_logged_levels)
+{
+  logged_levels=new_logged_levels;
+}
 
 static void
 start_element_handler (GMarkupParseContext *context,
