@@ -2,7 +2,7 @@ AM_CFLAGS = $(GOBJECT_CFLAGS)
 AM_LDFLAGS = -module -avoid-version 
 LIBS = $(GOBJECT_LIBS)
 
-check_PROGRAMS = gitestrepo gitestthrows gitypelibtest gitestwrite gitestenum
+check_PROGRAMS = gitestrepo gitestthrows gitypelibtest gitestwrite gitestenum gitestfile
 
 gitestrepo_SOURCES = $(srcdir)/gitestrepo.c
 gitestrepo_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
@@ -16,6 +16,10 @@ gitestenum_SOURCES = $(srcdir)/gitestenum.c
 gitestenum_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
 gitestenum_LDADD = $(top_builddir)/libgirepository-1.0.la  $(top_builddir)/libgirepository-gthash.la $(GIREPO_LIBS)
 
+gitestfile_SOURCES = $(srcdir)/gitestfile.c
+gitestfile_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
+gitestfile_LDADD = $(top_builddir)/libgirepository-1.0.la  $(top_builddir)/libgirepository-gthash.la $(GIREPO_LIBS)
+
 gitestthrows_SOURCES = $(srcdir)/gitestthrows.c
 gitestthrows_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
 gitestthrows_LDADD = $(top_builddir)/libgirepository-1.0.la $(GIREPO_LIBS)
@@ -24,6 +28,6 @@ gitypelibtest_SOURCES = $(srcdir)/gitypelibtest.c
 gitypelibtest_CPPFLAGS = $(GIREPO_CFLAGS) -I$(top_srcdir)/girepository
 gitypelibtest_LDADD = $(top_builddir)/libgirepository-1.0.la $(GIREPO_LIBS)
 
-TESTS = gitestwrite gitestrepo gitestthrows gitypelibtest gitestenum
+TESTS = gitestwrite gitestrepo gitestthrows gitypelibtest gitestenum gitestfile
 TESTS_ENVIRONMENT=env GI_TYPELIB_PATH=$(top_builddir):$(top_builddir)/gir:$(top_builddir)/tests:$(top_builddir)/tests/scanner: \
    XDG_DATA_DIRS="$(top_srcdir)/gir:$(XDG_DATA_DIRS)" $(DEBUG)

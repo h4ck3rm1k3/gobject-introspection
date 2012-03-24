@@ -1487,7 +1487,7 @@ validate_enum_blob (ValidateContext *ctx,
 				error))
 	return FALSE;
 
-#if 0
+ #if 0
       v1 = (ValueBlob *)&typelib->data[offset2];
       for (j = 0; j < i; j++)
 	{

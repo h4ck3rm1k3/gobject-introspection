@@ -830,7 +830,7 @@ typedef struct {
 
   ValueBlob values[];
 #if 0
-  FunctionBlob methods[];
+  //  FunctionBlob methods[];
 #endif
 } EnumBlob;
 

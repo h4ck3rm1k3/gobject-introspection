@@ -12,7 +12,7 @@ EXTRA_DIST=
 BUILT_SOURCES=
 CLEANFILES=
 
-INCLUDES = $(GOBJECT_CFLAGS)
+INCLUDES = $(GOBJECT_CFLAGS) -O0
 LIBADD = $(GOBJECT_LIBS)
 
 testsdir = $(datadir)/gobject-introspection-1.0/tests
