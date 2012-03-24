@@ -61,6 +61,7 @@ libgirepository_1_0_la_SOURCES =			\
 	girepository/gitypeinfo.c			\
 	girepository/gitypelib.c			\
 	girepository/gitypelib-internal.h		\
+	girepository/gitypelib-internal-xml.h           \
 	girepository/glib-compat.h			\
 	girepository/giunioninfo.c			\
 	girepository/givfuncinfo.c \

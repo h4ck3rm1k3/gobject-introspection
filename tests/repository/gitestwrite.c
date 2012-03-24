@@ -3,6 +3,7 @@
 */
 #include "girepository.h"
 
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -20,218 +21,7 @@
 #include "girwriter.h"
 #include "girepository.h"
 #include "gitypelib-internal.h"
-
-typedef struct {
-  FILE *file;
-  GSList *stack;
-  gboolean show_all;
-} Xml;
-
-typedef struct {
-  char *name;
-  guint has_children : 1;
-} XmlElement;
-
-
-static XmlElement *
-xml_element_new (const char *name)
-{
-  XmlElement *elem;
-
-  elem = g_slice_new (XmlElement);
-  elem->name = g_strdup (name);
-  elem->has_children = FALSE;
-  return elem;
-}
-
-static void
-xml_element_free (XmlElement *elem)
-{
-  g_free (elem->name);
-  g_slice_free (XmlElement, elem);
-}
-
-static void
-xml_printf (Xml *xml, const char *fmt, ...)
-{
-  va_list ap;
-  char *s;
-
-  va_start (ap, fmt);
-  s = g_markup_vprintf_escaped (fmt, ap);
-  fputs (s, xml->file);
-  g_free (s);
-  va_end (ap);
-}
-
-static void
-xml_start_element (Xml *xml, const char *element_name)
-{
-  XmlElement *parent = NULL;
-
-  if (xml->stack)
-    {
-      parent = xml->stack->data;
-
-      if (!parent->has_children)
-        xml_printf (xml, ">\n");
-
-      parent->has_children = TRUE;
-    }
-
-  xml_printf (xml, "%*s<%s", g_slist_length(xml->stack)*2, "", element_name);
-
-  xml->stack = g_slist_prepend (xml->stack, xml_element_new (element_name));
-}
-
-static void
-xml_end_element (Xml *xml, const char *name)
-{
-  XmlElement *elem;
-
-  g_assert (xml->stack != NULL);
-
-  elem = xml->stack->data;
-  xml->stack = g_slist_delete_link (xml->stack, xml->stack);
-
-  if (name != NULL)
-    g_assert_cmpstr (name, ==, elem->name);
-
-  if (elem->has_children)
-    xml_printf (xml, "%*s</%s>\n", g_slist_length (xml->stack)*2, "", elem->name);
-  else
-    xml_printf (xml, "/>\n");
-
-  xml_element_free (elem);
-}
-
-static void
-xml_end_element_unchecked (Xml *xml)
-{
-  xml_end_element (xml, NULL);
-}
-
-static Xml *
-xml_open (FILE *file)
-{
-  Xml *xml;
-
-  xml = g_slice_new (Xml);
-  xml->file = file;
-  xml->stack = NULL;
-
-  return xml;
-}
-
-static void
-xml_close (Xml *xml)
-{
-  g_assert (xml->stack == NULL);
-  if (xml->file != NULL)
-    {
-      fflush (xml->file);
-      if (xml->file != stdout)
-        fclose (xml->file);
-      xml->file = NULL;
-    }
-}
-
-static void
-write_attributes (Xml *file,
-                  GIBaseInfo *info)
-{
-  GIAttributeIter iter = { 0, };
-  char *name, *value;
-
-  while (g_base_info_iterate_attributes (info, &iter, &name, &value))
-    {
-      xml_start_element (file, "attribute");
-      xml_printf (file, " name=\"%s\" value=\"%s\"", name, value);
-      xml_end_element (file, "attribute");
-    }
-}
-
-static void
-xml_free (Xml *xml)
-{
-  xml_close (xml);
-  g_slice_free (Xml, xml);
-}
-
-
-static void
-write_value_info (const gchar *namespace,
-		  GIValueInfo *info,
-		  Xml         *file)
-{
-  const gchar *name;
-  gint64 value;
-  gchar *value_str;
-  gboolean deprecated;
-
-  name = g_base_info_get_name ((GIBaseInfo *)info);
-  value = g_value_info_get_value (info);
-  deprecated = g_base_info_is_deprecated ((GIBaseInfo *)info);
-
-  xml_start_element (file, "member");
-  value_str = g_strdup_printf ("%" G_GINT64_FORMAT, value);
-  xml_printf (file, " name=\"%s\" value=\"%s\"", name, value_str);
-  g_free (value_str);
-
-  if (deprecated)
-    xml_printf (file, " deprecated=\"1\"");
-
-  write_attributes (file, (GIBaseInfo*) info);
-
-  xml_end_element (file, "member");
-}
-
-static void
-write_enum_info (const gchar *namespace,
-		 GIEnumInfo *info,
-		 Xml         *file)
-{
-  const gchar *name;
-  const gchar *type_name;
-  const gchar *type_init;
-  const gchar *error_domain;
-  gboolean deprecated;
-  gint i;
-
-  name = g_base_info_get_name ((GIBaseInfo *)info);
-  deprecated = g_base_info_is_deprecated ((GIBaseInfo *)info);
-
-  type_name = g_registered_type_info_get_type_name ((GIRegisteredTypeInfo*)info);
-  type_init = g_registered_type_info_get_type_init ((GIRegisteredTypeInfo*)info);
-  error_domain = g_enum_info_get_error_domain (info);
-
-  if (g_base_info_get_type ((GIBaseInfo *)info) == GI_INFO_TYPE_ENUM)
-    xml_start_element (file, "enumeration");
-  else
-    xml_start_element (file, "bitfield");
-  xml_printf (file, " name=\"%s\"", name);
-
-  if (type_init)
-    xml_printf (file, " glib:type-name=\"%s\" glib:get-type=\"%s\"", type_name, type_init);
-  if (error_domain)
-    xml_printf (file, " glib:error-domain=\"%s\"", error_domain);
-
-  if (deprecated)
-    xml_printf (file, " deprecated=\"1\"");
-
-  write_attributes (file, (GIBaseInfo*) info);
-
-  for (i = 0; i < g_enum_info_get_n_values (info); i++)
-    {
-      GIValueInfo *value = g_enum_info_get_value (info, i);
-      write_value_info (namespace, value, file);
-      g_base_info_unref ((GIBaseInfo *)value);
-    }
-
-  xml_end_element_unchecked (file);
-}
-
-
+#include "gitypelib-internal-xml.h"
 
 
 void test_constructor_return_type(GIBaseInfo* object_info);
@@ -327,26 +117,26 @@ main(int argc, char **argv)
 
   const char *filename = "testenum.gir";
   const char *namespace="test";
-  gboolean    needs_prefix=1;
+  //  gboolean    needs_prefix=1;
   FILE *ofile;
-  Xml *xml;
+  _GIWriteXml *xml;
 
 
   ofile = g_fopen (filename, "w");
 
-  xml = xml_open (ofile);
+  xml = _gi_xmlwrite_xml_open (ofile);
   xml->show_all = 1;
-  xml_printf (xml, "<?xml version=\"1.0\"?>\n");
-  xml_start_element (xml, "repository");
-  xml_start_element (xml, "namespace");
-  xml_printf (xml, " name=\"%s\" version=\"%s\"", namespace, "totally-experimental-0.00001");
-  xml_printf (xml, " version=\"1.0\"\n"
+  _gi_xmlwrite_xml_printf (xml, "<?xml version=\"1.0\"?>\n");
+  _gi_xmlwrite_xml_start_element (xml, "repository");
+  _gi_xmlwrite_xml_start_element (xml, "namespace");
+  _gi_xmlwrite_xml_printf (xml, " name=\"%s\" version=\"%s\"", namespace, "totally-experimental-0.00001");
+  _gi_xmlwrite_xml_printf (xml, " version=\"1.0\"\n"
 	      "            xmlns=\"http://www.gtk.org/introspection/core/1.0\"\n"
 	      "            xmlns:c=\"http://www.gtk.org/introspection/c/1.0\"\n"
 	      "            xmlns:glib=\"http://www.gtk.org/introspection/glib/1.0\"");
-  write_enum_info(namespace,(GIEnumInfo *)errorinfo,xml);
-  xml_end_element (xml, "namespace");
-  xml_end_element (xml, "repository");
-  xml_free (xml);
+  _gi_xmlwrite_write_enum_info(namespace,(GIEnumInfo *)errorinfo,xml);
+  _gi_xmlwrite_xml_end_element (xml, "namespace");
+  _gi_xmlwrite_xml_end_element (xml, "repository");
+  _gi_xmlwrite_xml_free (xml);
   exit(0);
 }
